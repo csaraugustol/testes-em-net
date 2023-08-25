@@ -10,10 +10,11 @@ using Xunit.Abstractions;
 
 namespace Alura.Estacionamento.Testes
 {
-    public class PatioTestes: IDisposable
+    public class PatioTestes : IDisposable
     {
         private Veiculo veiculo;
         private Patio estacionamento;
+        Operador operador;
         public ITestOutputHelper SaidaConsoleTeste;
 
         public PatioTestes(ITestOutputHelper _saidaConsoleTeste)
@@ -22,6 +23,8 @@ namespace Alura.Estacionamento.Testes
             SaidaConsoleTeste.WriteLine("Construtor invocado.");
             veiculo = new Veiculo();
             estacionamento = new Patio();
+            operador = new Operador();
+            operador.Nome = "José";
         }
 
         [Fact]
@@ -29,7 +32,7 @@ namespace Alura.Estacionamento.Testes
         {
             //Arrange
             //var estacionamento = new Patio();
-
+            estacionamento.OperadorPatio = operador;
             var veiculo = new Veiculo();
             veiculo.Proprietario = "Carlos André";
             veiculo.Tipo = TipoVeiculo.Automovel;
@@ -63,6 +66,7 @@ namespace Alura.Estacionamento.Testes
             veiculo.Modelo = modelo;
             veiculo.Placa = placa;
 
+            estacionamento.OperadorPatio = operador;
             estacionamento.RegistrarEntradaVeiculo(veiculo);
             estacionamento.RegistrarSaidaVeiculo(veiculo.Placa);
 
@@ -75,7 +79,7 @@ namespace Alura.Estacionamento.Testes
 
         [Theory]
         [InlineData("Carlos André", "Azul", "Compass", "ABC-1234")]
-        public void LocalizaVeiculoPatio(string proprietario,
+        public void LocalizaVeiculoPatioPeloIdTicket(string proprietario,
             string cor, string modelo, string placa)
         {
             //Arrange
@@ -85,43 +89,14 @@ namespace Alura.Estacionamento.Testes
             veiculo.Cor = cor;
             veiculo.Modelo = modelo;
             veiculo.Placa = placa;
-
+            estacionamento.OperadorPatio = operador;
             estacionamento.RegistrarEntradaVeiculo(veiculo);
 
             //Act
-            var consultado = estacionamento.PesquisaVeiculo(placa);
+            var consultado = estacionamento.PesquisaVeiculo(veiculo.IdTicket);
 
             //Assert
-            Assert.Equal(placa, consultado.Placa);
-        }
-
-        [Fact]
-        public void AlteraDadosVeiculo()
-        {
-            //Arrange
-            //var estacionamento = new Patio();
-
-            //var veiculo = new Veiculo();
-            veiculo.Proprietario = "Carlos André";
-            veiculo.Tipo = TipoVeiculo.Automovel;
-            veiculo.Cor = "Preto";
-            veiculo.Modelo = "Compass";
-            veiculo.Placa = "ABC-1234";
-
-            estacionamento.RegistrarEntradaVeiculo(veiculo);
-
-            var veiculoAlterado = new Veiculo();
-            veiculoAlterado.Proprietario = "Carlos André";
-            veiculoAlterado.Tipo = TipoVeiculo.Automovel;
-            veiculoAlterado.Cor = "Azul";
-            veiculoAlterado.Modelo = "Compass";
-            veiculoAlterado.Placa = "ABC-1234";
-
-            //Act
-            var alterado = estacionamento.AlterarDadosVeiculo(veiculoAlterado);
-
-            //Assert
-            Assert.Equal(alterado.Cor, veiculoAlterado.Cor);
+            Assert.Contains("###Ticket Estacionamento Alura###", consultado.Ticket);
         }
 
         public void Dispose()

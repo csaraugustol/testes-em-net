@@ -6,9 +6,11 @@ using System;
 
 namespace Alura.Estacionamento.Testes
 {
-    public class VeiculoTestes: IDisposable
+    public class VeiculoTestes : IDisposable
     {
         private Veiculo veiculo;
+        private Patio estacionamento;
+        Operador operador;
         public ITestOutputHelper SaidaConsoleTeste;
 
         public VeiculoTestes(ITestOutputHelper _saidaConsoleTeste)
@@ -16,6 +18,10 @@ namespace Alura.Estacionamento.Testes
             SaidaConsoleTeste = _saidaConsoleTeste;
             SaidaConsoleTeste.WriteLine("Construtor invocado.");
             veiculo = new Veiculo();
+            estacionamento = new Patio();
+            operador = new Operador();
+            operador.Nome = "José";
+            veiculo.Tipo = TipoVeiculo.Automovel;
         }
 
         [Fact]
@@ -59,7 +65,7 @@ namespace Alura.Estacionamento.Testes
             Assert.Equal(TipoVeiculo.Automovel, veiculo.Tipo);
         }
 
-        [Fact(DisplayName ="Nomea o método", Skip = "Com Skip o teste será ignorado .")]
+        [Fact(DisplayName = "Nomea o método", Skip = "Com Skip o teste será ignorado .")]
         public void ValidaNomeProprietario()
         {
 
@@ -86,6 +92,59 @@ namespace Alura.Estacionamento.Testes
         public void Dispose()
         {
             SaidaConsoleTeste.WriteLine("Construtor invocado.");
+        }
+
+        [Fact]
+        public void TestaNomeProprietarioVeiculoComMenosDeTresCaracteres()
+        {
+            string nomePropietario = "CA";
+
+            Assert.Throws<System.FormatException>(
+                () => new Veiculo(nomePropietario)
+            );
+        }
+
+        [Fact]
+        public void TestaMesangemDeExcecaoDoQuartoCaractereDaPlaca()
+        {
+            string placa = "ASDF1234";
+
+            var mensagem = Assert.Throws<System.FormatException>(
+                () => new Veiculo().Placa = placa
+            );
+
+            Assert.Equal("O 4° caractere deve ser um hífen", mensagem.Message);
+        }
+
+        [Fact]
+        public void AlteraDadosVeiculo()
+        {
+            //Arrange
+            //var estacionamento = new Patio();
+
+            //var veiculo = new Veiculo();
+            estacionamento.OperadorPatio = operador;
+
+            veiculo.Proprietario = "Carlos André";
+            veiculo.Tipo = TipoVeiculo.Automovel;
+            veiculo.Cor = "Preto";
+            veiculo.Modelo = "Compass";
+            veiculo.Placa = "ABC-1234";
+
+            estacionamento.RegistrarEntradaVeiculo(veiculo);
+
+            var veiculoAlterado = new Veiculo();
+            veiculoAlterado.Proprietario = veiculo.Proprietario;
+            veiculoAlterado.Tipo = TipoVeiculo.Automovel;
+            veiculoAlterado.Cor = "Azul";
+            veiculoAlterado.Modelo = veiculo.Modelo;
+            veiculoAlterado.Placa = veiculo.Placa;
+
+            //Act
+            var alterado = estacionamento.AlterarDadosVeiculo(veiculoAlterado);
+
+            //Assert
+            Assert.Equal(alterado.Cor, veiculoAlterado.Cor);
         }
     }
 }
